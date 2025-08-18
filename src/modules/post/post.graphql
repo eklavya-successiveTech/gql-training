@@ -6,7 +6,18 @@ type Post {
   comments: [Comment!]!
 }
 
+type PaginatedPosts {
+  posts: [Post!]!
+  totalCount: Int!
+  hasNextPage: Boolean!
+  hasPrevPage: Boolean!
+}
+
 extend type Query {
   getPost(id: ID!): Post
-  getPosts: [Post!]!
+  getPosts(limit: Int!, offset: Int!, sortBy: String, order: String): PaginatedPosts!
+}
+
+extend type Mutation {
+  addPost(title: String!, content: String!, authorId: ID!): Post!
 }

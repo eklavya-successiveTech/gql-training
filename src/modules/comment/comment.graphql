@@ -9,3 +9,8 @@ extend type Query {
   getComment(id: ID!): Comment
   getComments: [Comment!]!
 }
+
+extend type Mutation {
+  deleteComment(id: ID!): String
+  addComment(postId: ID!, content: String!, authorId: ID!): Comment!
+}

@@ -5,7 +5,14 @@ type User {
   posts: [Post!]!
 }
 
-type Query {
-  getUser(id: ID!): User
+extend type Query {
+  getUser(id: ID!): UserResult
   getUsers: [User!]!
 }
+
+extend type Mutation {
+  updateUser(id: ID!, name: String, email: String): UserResult
+}
+
+# Return either a User or an ErrorType
+union UserResult = User | ErrorType

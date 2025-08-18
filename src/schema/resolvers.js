@@ -8,4 +8,12 @@ export const resolvers = {
     ...postResolvers.Query,
     ...commentResolvers.Query,
   },
+  Mutation: {
+    ...userResolvers.Mutation,
+    ...postResolvers.Mutation,
+    ...commentResolvers.Mutation,
+  },
+  // include union/type resolvers explicitly
+  UserResult: userResolvers.UserResult,
+  // (Add other unions here later if you create them, e.g., PostResult, CommentResult)
 };
