@@ -2,17 +2,35 @@ type User {
   id: ID!
   name: String!
   email: String!
+  bio: String
+  # Relationship: User's posts
   posts: [Post!]!
+  # Relationship: User's comments
+  comments: [Comment!]!
+}
+
+type Error {
+  code: String!
+  message: String!
+}
+
+union UserResult = User | Error
+
+# Input types for mutations
+input UpdateUserInput {
+  name: String
+  email: String
+  bio: String
 }
 
 extend type Query {
-  getUser(id: ID!): UserResult
-  getUsers: [User!]!
+  # Fetch all users
+  users: [User!]!
+  # Fetch a specific user by ID
+  user(id: ID!): UserResult
 }
 
 extend type Mutation {
-  updateUser(id: ID!, name: String, email: String): UserResult
+  # Update user information
+  updateUser(id: ID!, input: UpdateUserInput!): UserResult
 }
-
-# Return either a User or an ErrorType
-union UserResult = User | ErrorType

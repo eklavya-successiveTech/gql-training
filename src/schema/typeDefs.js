@@ -1,15 +1,21 @@
-import path from "path";
-import { fileURLToPath } from "url";
-import { loadFilesSync } from "@graphql-tools/load-files";
-import { mergeTypeDefs } from "@graphql-tools/merge";
+import { readFileSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Import individual module typeDefs (now as strings from .graphql files)
+import { userTypeDefs } from '../modules/user/index.js';
+import { postTypeDefs } from '../modules/post/index.js';
+import { commentTypeDefs } from '../modules/comment/index.js';
 
-// Load base schema + all module schemas
-const typesArray = loadFilesSync([
-  path.join(__dirname, "./*.graphql"),              // <-- baseSchema.graphql
-  path.join(__dirname, "../modules/**/*.graphql"),  // <-- module schemas
-]);
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
-export const typeDefs = mergeTypeDefs(typesArray);
+// Load base schema from .graphql file
+const baseTypeDefs = readFileSync(join(__dirname, 'base.graphql'), 'utf-8');
+
+// Combine all type definitions into a single array
+export const typeDefs = [
+  baseTypeDefs,
+  userTypeDefs,
+  postTypeDefs,
+  commentTypeDefs,
+];

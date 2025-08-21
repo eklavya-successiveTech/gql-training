@@ -1,16 +1,40 @@
 type Comment {
   id: ID!
-  text: String!
+  content: String!
+  postId: ID!
+  authorId: ID!
+  createdAt: String!
+  # Relationship: Comment author
   author: User!
+  # Relationship: Post this comment belongs to
   post: Post!
 }
 
+# Input types for mutations
+input CreateCommentInput {
+  content: String!
+  postId: ID!
+  authorId: ID!
+}
+
+# Response type for delete operations
+type DeleteResponse {
+  success: Boolean!
+  message: String!
+}
+
 extend type Query {
-  getComment(id: ID!): Comment
-  getComments: [Comment!]!
+  # Fetch all comments
+  comments: [Comment!]!
+  # Fetch a specific comment by ID
+  comment(id: ID!): Comment
+  # Fetch comments for a specific post
+  commentsByPost(postId: ID!): [Comment!]!
 }
 
 extend type Mutation {
-  deleteComment(id: ID!): String
-  addComment(postId: ID!, content: String!, authorId: ID!): Comment!
+  # Create a new comment
+  createComment(input: CreateCommentInput!): Comment!
+  # Delete a comment by ID
+  deleteComment(id: ID!): DeleteResponse!
 }
