@@ -38,3 +38,10 @@ extend type Mutation {
   # Delete a comment by ID
   deleteComment(id: ID!): DeleteResponse!
 }
+
+extend type Subscription {
+  # Subscribe to new comments being created
+  commentAdded: Comment!
+  # Subscribe to comments being deleted
+  commentDeleted: DeleteResponse!
+}

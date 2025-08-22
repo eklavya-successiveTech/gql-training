@@ -6,6 +6,8 @@ import { fileURLToPath } from 'url';
 import { userTypeDefs } from '../modules/user/index.js';
 import { postTypeDefs } from '../modules/post/index.js';
 import { commentTypeDefs } from '../modules/comment/index.js';
+import { messageTypeDefs } from '../modules/messages/index.js';
+import { presenceTypeDefs } from '../modules/presence/index.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -18,4 +20,6 @@ export const typeDefs = [
   userTypeDefs,
   postTypeDefs,
   commentTypeDefs,
+  messageTypeDefs,     
+  presenceTypeDefs, 
 ];
