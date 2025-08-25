@@ -6,16 +6,16 @@ async function startServer() {
     const PORT = process.env.PORT || 4000;
 
     httpServer.listen(PORT, () => {
-      console.log('🚀 GraphQL Blogging Platform Server Ready!');
-      console.log(`📍 Server running at: http://localhost:${PORT}`);
-      console.log(`🎮 GraphQL Playground: http://localhost:${PORT}/graphql`);
-      console.log(`🔌 WebSocket Subscriptions: ws://localhost:${PORT}/graphql`);
+      console.log('GraphQL Blogging Platform Server Ready!');
+      console.log(`Server running at: http://localhost:${PORT}`);
+      console.log(`GraphQL Playground: http://localhost:${PORT}/graphql`);
+      console.log(`WebSocket Subscriptions: ws://localhost:${PORT}/graphql`);
     });
 
     const gracefulShutdown = (signal) => {
-      console.log(`\n📴 Received ${signal}, shutting down gracefully...`);
+      console.log(`\nReceived ${signal}, shutting down gracefully...`);
       httpServer.close(() => {
-        console.log('✅ HTTP server closed');
+        console.log('HTTP server closed');
         process.exit(0);
       });
     };
@@ -24,14 +24,14 @@ async function startServer() {
     process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
   } catch (error) {
-    console.error('❌ Failed to start server:', error);
+    console.error('Failed to start server:', error);
     process.exit(1);
   }
 }
 
 process.on('unhandledRejection', (err) => {
-  console.error('❌ Unhandled Promise Rejection:', err);
+  console.error('Unhandled Promise Rejection:', err);
   process.exit(1);
-});
+});-
 
 startServer();

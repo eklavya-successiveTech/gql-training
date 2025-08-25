@@ -9,6 +9,7 @@ import { makeExecutableSchema } from '@graphql-tools/schema';
 import { WebSocketServer } from 'ws';
 import { useServer } from 'graphql-ws/lib/use/ws';
 import { getUserFromToken } from '../auth/middleware.js';
+import connectDB from '../database/connection.js';
 
 // Import schema and pubsub
 import { typeDefs } from '../schema/index.js';
@@ -16,6 +17,7 @@ import { resolvers } from '../schema/index.js';
 import { pubsub } from './pubsub.js';
 
 export async function createExpressServer() {
+  await connectDB();
   // Create Express app and HTTP server
   const app = express();
   const httpServer = http.createServer(app);
@@ -66,11 +68,11 @@ export async function createExpressServer() {
         const token = req.headers.authorization;
       
       // Get user from token
-      const user = getUserFromToken(token);
+      const user = await getUserFromToken(token);
       
       return {
         pubsub,
-        user, // ← Now this will be the actual user or null
+        user, 
       };
       },
     })

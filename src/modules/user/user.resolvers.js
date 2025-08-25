@@ -1,5 +1,6 @@
-import { users, posts, comments } from '../../data/dummy.js';
+import { User, Post, Comment } from '../../models/index.js'; 
 import { SUBSCRIPTION_EVENTS } from '../../server/pubsub.js';
+import { requireAuth, requireRole } from '../../auth/middleware.js';
 
 // Utility function for artificial delay
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -9,13 +10,13 @@ export const userResolvers = {
     // Fetch all users with artificial delay
     users: async () => {
       await delay(2000);
-      return users;
+      return await User.find({}); 
     },
     
     // Fetch a specific user by ID with error handling
     user: async (_, { id }) => {
       await delay(1500);
-      const foundUser = users.find(user => user.id === id);
+      const foundUser = await User.findOne({ id }); 
       
       if (!foundUser) {
         return {
@@ -29,25 +30,23 @@ export const userResolvers = {
   },
 
   Mutation: {
-    // Update user information with error handling
-    updateUser: (_, { id, input }, { pubsub }) => {
-      const userIndex = users.findIndex(user => user.id === id);
+    // Admin-only: Update any user's basic information
+    updateUser: async (_, { id, input }, { user, pubsub }) => {
+      // Require admin role for updating other users
+      requireRole(user, ['ADMIN']);
       
-      if (userIndex === -1) {
+      const updatedUser = await User.findOneAndUpdate(
+        { id }, 
+        input, 
+        { new: true }
+      );
+      
+      if (!updatedUser) {
         return {
           code: "USER_NOT_FOUND",
           message: `User with id ${id} not found`
         };
       }
-
-      // Update user with provided fields
-      const updatedUser = {
-        ...users[userIndex],
-        ...input, // Spread input to update only provided fields
-      };
-
-      // Update the user in the array
-      users[userIndex] = updatedUser;
 
       // Publish subscription event only for successful updates
       if (pubsub) {
@@ -78,9 +77,9 @@ export const userResolvers = {
 
   User: {
     // Resolve posts authored by this user
-    posts: (parent) => posts.filter(post => post.authorId === parent.id),
+    posts: async (parent) => await Post.find({ authorId: parent.id }), 
     
     // Resolve comments made by this user
-    comments: (parent) => comments.filter(comment => comment.authorId === parent.id),
+    comments: async (parent) => await Comment.find({ authorId: parent.id }), 
   },
 };

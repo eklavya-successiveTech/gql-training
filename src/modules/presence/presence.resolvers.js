@@ -1,7 +1,7 @@
-import { users } from '../../data/dummy.js';
+import { User } from '../../models/index.js'; 
 import { SUBSCRIPTION_EVENTS } from '../../server/pubsub.js';
 
-// Simple online users store
+// Simple online users store (keep in memory for now)
 const onlineUsers = new Set();
 
 export const presenceResolvers = {
@@ -71,6 +71,6 @@ export const presenceResolvers = {
 
   // Resolve user info
   UserPresence: {
-    user: (parent) => users.find(u => u.id === parent.userId),
+    user: async (parent) => await User.findOne({ id: parent.userId }), // ← CHANGED
   },
 };

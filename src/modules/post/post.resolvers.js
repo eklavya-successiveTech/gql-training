@@ -1,39 +1,30 @@
-import { posts, users, comments } from '../../data/dummy.js';
+import { Post, User, Comment } from '../../models/index.js'; 
 import { SUBSCRIPTION_EVENTS } from '../../server/pubsub.js';
-
-// Utility function to generate unique IDs
-const generateId = () => (Math.max(...posts.map(p => parseInt(p.id))) + 1).toString();
 
 export const postResolvers = {
   Query: {
     // Fetch all posts
-    posts: () => posts,
+    posts: async () => await Post.find({}), 
     
     // Fetch a specific post by ID
-    post: (_, { id }) => posts.find(post => post.id === id) || null,
+    post: async (_, { id }) => await Post.findOne({ id }), 
     
     // Fetch posts by a specific author
-    postsByAuthor: (_, { authorId }) => posts.filter(post => post.authorId === authorId),
+    postsByAuthor: async (_, { authorId }) => await Post.find({ authorId }), 
 
     // Fetch paginated posts with sorting
-    paginatedPosts: (_, { page = 1, limit = 10, sortBy = "createdAt", sortOrder = "desc" }) => {
-      // Sort posts
-      const sortedPosts = [...posts].sort((a, b) => {
-        const aValue = sortBy === "createdAt" ? new Date(a[sortBy]) : a[sortBy];
-        const bValue = sortBy === "createdAt" ? new Date(b[sortBy]) : b[sortBy];
-        
-        if (sortOrder === "asc") {
-          return aValue > bValue ? 1 : -1;
-        } else {
-          return bValue > aValue ? 1 : -1;
-        }
-      });
-
-      const total = sortedPosts.length;
+    paginatedPosts: async (_, { page = 1, limit = 10, sortBy = "createdAt", sortOrder = "desc" }) => {
+      const skip = (page - 1) * limit;
+      const sortOptions = {};
+      sortOptions[sortBy] = sortOrder === "asc" ? 1 : -1;
+      
+      const data = await Post.find({})
+        .sort(sortOptions)
+        .skip(skip)
+        .limit(limit);
+      
+      const total = await Post.countDocuments(); 
       const totalPages = Math.ceil(total / limit);
-      const start = (page - 1) * limit;
-      const end = start + limit;
-      const data = sortedPosts.slice(start, end);
 
       return {
         data,
@@ -47,24 +38,21 @@ export const postResolvers = {
 
   Mutation: {
     // Create a new post
-    createPost: (_, { input }, { pubsub }) => {
+    createPost: async (_, { input }, { pubsub }) => { 
       // Validate that author exists
-      const author = users.find(user => user.id === input.authorId);
+      const author = await User.findOne({ id: input.authorId }); 
       if (!author) {
         throw new Error(`Author with id ${input.authorId} not found`);
       }
 
-      // Create new post with generated ID and timestamp
-      const newPost = {
-        id: generateId(),
+      // Create new post - let MongoDB auto-generate ID
+      const newPost = new Post({
         title: input.title,
         content: input.content,
         authorId: input.authorId,
-        createdAt: new Date().toISOString(),
-      };
+      });
 
-      // Add to posts array
-      posts.push(newPost);
+      await newPost.save(); 
 
       // Publish subscription event
       if (pubsub) {
@@ -86,11 +74,8 @@ export const postResolvers = {
     // Subscribe to new comments on a specific post
     commentAddedToPost: {
       subscribe: (_, { postId }, { pubsub }) => {
-        // Create filtered async iterator for specific post
         const iterator = pubsub.asyncIterableIterator([SUBSCRIPTION_EVENTS.COMMENT_ADDED]);
         
-        // Return filtered iterator (note: this is a simplified approach)
-        // In production, you'd want to use pubsub.asyncIterableIterator with proper filtering
         return {
           [Symbol.asyncIterator]: async function* () {
             for await (const payload of iterator) {
@@ -106,12 +91,12 @@ export const postResolvers = {
 
   Post: {
     // Resolve the author of the post
-    author: (parent) => users.find(user => user.id === parent.authorId),
+    author: async (parent) => await User.findOne({ id: parent.authorId }), 
     
     // Resolve comments for this post
-    comments: (parent) => comments.filter(comment => comment.postId === parent.id),
+    comments: async (parent) => await Comment.find({ postId: parent.id }), 
     
     // Computed field: Count of comments on this post
-    commentCount: (parent) => comments.filter(comment => comment.postId === parent.id).length,
+    commentCount: async (parent) => await Comment.countDocuments({ postId: parent.id }), 
   },
 };
