@@ -1,0 +1,11 @@
+type Comment {
+  id: ID!
+  text: String!
+  author: User!
+  post: Post!
+}
+
+extend type Query {
+  getComment(id: ID!): Comment
+  getComments: [Comment!]!
+}
