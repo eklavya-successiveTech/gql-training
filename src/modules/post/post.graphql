@@ -2,11 +2,48 @@ type Post {
   id: ID!
   title: String!
   content: String!
+  authorId: ID!
+  createdAt: String!
+  # Relationship: Post author
   author: User!
+  # Relationship: Post comments
   comments: [Comment!]!
+  # Computed field: Comment count
+  commentCount: Int!
+}
+
+# Paginated result for posts
+type PostPage {
+  data: [Post!]!
+  total: Int!           # total posts in database
+  page: Int!            # current page
+  limit: Int!           # posts per page
+  totalPages: Int!      # total pages
+}
+
+# Input types for mutations
+input CreatePostInput {
+  title: String!
+  content: String!
+  authorId: ID!
 }
 
 extend type Query {
-  getPost(id: ID!): Post
-  getPosts: [Post!]!
+  # Fetch all posts
+  posts: [Post!]!
+  # Fetch a specific post by ID
+  post(id: ID!): Post
+  # Fetch posts by a specific author
+  postsByAuthor(authorId: ID!): [Post!]!
+  paginatedPosts(
+    page: Int = 1,          # default page
+    limit: Int = 10,        # default items per page
+    sortBy: String = "createdAt",  # field to sort by
+    sortOrder: String = "desc"     # "asc" or "desc"
+  ): PostPage!
+}
+
+extend type Mutation {
+  # Create a new post
+  createPost(input: CreatePostInput!): Post!
 }
