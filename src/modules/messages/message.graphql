@@ -1,0 +1,40 @@
+# Simple Message type for chat
+type Message {
+  id: ID!
+  content: String!
+  authorId: ID!
+  author: User!
+  timestamp: String!
+}
+
+# Simple inputs
+input SendMessageInput {
+  content: String!
+}
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+# Simple auth response
+type AuthPayload {
+  token: String!
+  user: User!
+}
+
+extend type Query {
+  # Question 5: Fetch message history
+  messages: [Message!]!
+}
+
+extend type Mutation {
+  # Question 3: Send messages and authentication
+  login(input: LoginInput!): AuthPayload!
+  sendMessage(input: SendMessageInput!): Message!
+}
+
+extend type Subscription {
+  # Question 3: Real-time messages
+  messageAdded: Message!
+}

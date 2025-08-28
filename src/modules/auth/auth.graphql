@@ -1,0 +1,77 @@
+input RegisterInput {
+  name: String!
+  email: String!
+  password: String!
+  confirmPassword: String!
+  bio: String
+}
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+input ChangePasswordInput {
+  currentPassword: String!
+  newPassword: String!
+  confirmPassword: String!
+}
+
+input UpdateProfileInput {
+  name: String
+  bio: String
+  avatar: String
+}
+
+# Auth Response Types
+type AuthPayload {
+  token: String!
+  user: User!
+  message: String!
+}
+
+type AuthResponse {
+  success: Boolean!
+  message: String!
+}
+
+type UserPage {
+  users: [User!]!
+  total: Int!
+  page: Int!
+  limit: Int!
+  totalPages: Int!
+}
+
+# Enhanced User Type (update your existing user.graphql)
+extend type User {
+  role: String!
+  isActive: Boolean!
+  emailVerified: Boolean!
+  lastLogin: String
+  createdAt: String!
+  updatedAt: String!
+}
+
+extend type Query {
+  # Get current user
+  me: User!
+  # Admin only: Get all users with pagination
+  allUsers(page: Int, limit: Int): UserPage!
+}
+
+extend type Mutation {
+  # Authentication mutations
+  register(input: RegisterInput!): AuthPayload!
+  login(input: LoginInput!): AuthPayload!
+  changePassword(input: ChangePasswordInput!): AuthResponse!
+  updateProfile(input: UpdateProfileInput!): User!
+  
+  # Admin mutations
+  deactivateUser(userId: ID!): AuthResponse!
+}
+
+extend type Subscription {
+  # Subscribe to new registrations
+  userRegistered: User!
+}

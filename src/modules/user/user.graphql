@@ -34,3 +34,8 @@ extend type Mutation {
   # Update user information
   updateUser(id: ID!, input: UpdateUserInput!): UserResult
 }
+
+extend type Subscription {
+  # Subscribe to user profile updates
+  userUpdated: User!
+}

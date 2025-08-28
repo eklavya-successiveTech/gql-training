@@ -1,0 +1,23 @@
+# Simple User Presence
+type UserPresence {
+  userId: ID!
+  user: User!
+  isOnline: Boolean!
+}
+
+extend type Query {
+  # Question 4: Get online users
+  onlineUsers: [UserPresence!]!
+}
+
+extend type Mutation {
+  # Question 4: Join/leave chat
+  joinChat: UserPresence!
+  leaveChat: Boolean!
+}
+
+extend type Subscription {
+  # Question 4: Users joining/leaving notifications
+  userJoined: UserPresence!
+  userLeft: UserPresence!
+}

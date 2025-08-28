@@ -47,3 +47,10 @@ extend type Mutation {
   # Create a new post
   createPost(input: CreatePostInput!): Post!
 }
+
+extend type Subscription {
+  # Subscribe to new posts being created
+  postAdded: Post!
+  # Subscribe to new comments on a specific post
+  commentAddedToPost(postId: ID!): Comment!
+}
