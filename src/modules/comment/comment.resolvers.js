@@ -1,4 +1,8 @@
 import { comments, users, posts } from '../../data/dummy.js';
+import { SUBSCRIPTION_EVENTS } from '../../server/pubsub.js';
+
+// Utility function to generate unique IDs
+const generateId = () => (Math.max(...comments.map(c => parseInt(c.id))) + 1).toString();
 
 export const commentResolvers = {
   Query: {
@@ -14,7 +18,7 @@ export const commentResolvers = {
 
   Mutation: {
     // Create a new comment
-    createComment: (_, { input }) => {
+    createComment: (_, { input }, { pubsub }) => {
       // Validate that post exists
       const post = posts.find(post => post.id === input.postId);
       if (!post) {
@@ -39,27 +43,57 @@ export const commentResolvers = {
       // Add to comments array
       comments.push(newComment);
 
+      // Publish subscription events
+      if (pubsub) {
+        pubsub.publish(SUBSCRIPTION_EVENTS.COMMENT_ADDED, {
+          commentAdded: newComment,
+        });
+      }
+
       return newComment;
     },
 
     // Delete a comment by ID
-    deleteComment: (_, { id }) => {
+    deleteComment: (_, { id }, { pubsub }) => {
       const commentIndex = comments.findIndex(comment => comment.id === id);
       
       if (commentIndex === -1) {
-        return {
+        const response = {
           success: false,
           message: `Comment with id ${id} not found`,
         };
+        
+        return response;
       }
 
       // Remove comment from array
       comments.splice(commentIndex, 1);
 
-      return {
+      const response = {
         success: true,
         message: `Comment with id ${id} successfully deleted`,
       };
+
+      // Publish subscription event
+      if (pubsub) {
+        pubsub.publish(SUBSCRIPTION_EVENTS.COMMENT_DELETED, {
+          commentDeleted: response,
+        });
+      }
+
+      return response;
+    },
+  },
+
+  Subscription: {
+    // Subscribe to new comments being created
+    commentAdded: {
+      subscribe: (_, __, { pubsub }) => pubsub.asyncIterableIterator([SUBSCRIPTION_EVENTS.COMMENT_ADDED]),
+    },
+
+    // Subscribe to comments being deleted
+    commentDeleted: {
+      subscribe: (_, __, { pubsub }) => pubsub.asyncIterableIterator([SUBSCRIPTION_EVENTS.COMMENT_DELETED]),
     },
   },
 
